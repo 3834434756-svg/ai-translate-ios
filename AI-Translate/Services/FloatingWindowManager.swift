@@ -78,7 +78,7 @@ class FloatingWindowManager: NSObject, ObservableObject {
             activeVideoCallSourceView: source,
             contentViewController: pipVC
         )
-        guard let controller = AVPictureInPictureController(contentSource: contentSource) else { return }
+        let controller = AVPictureInPictureController(contentSource: contentSource)
         controller.delegate = self
         pipController = controller
         pipViewController = pipVC
