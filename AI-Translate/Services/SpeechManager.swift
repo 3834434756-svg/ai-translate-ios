@@ -88,6 +88,10 @@ class SpeechManager: NSObject, ObservableObject, SFSpeechRecognizerDelegate {
     }
 
     nonisolated func speechRecognizer(_ speechRecognizer: SFSpeechRecognizer, availabilityDidChange available: Bool) {
-        if !available { stopRecording() }
+        if !available {
+            Task { @MainActor in
+                self.stopRecording()
+            }
+        }
     }
 }
