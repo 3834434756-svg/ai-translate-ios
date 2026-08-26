@@ -2,19 +2,19 @@ import SwiftUI
 
 @main
 struct AI_TranslateApp: App {
-    @StateObject private var speechManager = SpeechManager()
-    @StateObject private var translationService = TranslationService()
-    @StateObject private var floatingWindow = FloatingWindowManager()
+    private let appState = AppState.shared
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(speechManager)
-                .environmentObject(translationService)
-                .environmentObject(floatingWindow)
+                .environmentObject(appState.speechManager)
+                .environmentObject(appState.translationService)
+                .environmentObject(appState.floatingWindow)
+                .environmentObject(appState.bridge)
                 .onAppear {
-                    speechManager.requestAuthorization()
+                    appState.speechManager.requestAuthorization()
                 }
+                .preferredColorScheme(.dark)
         }
     }
 }
