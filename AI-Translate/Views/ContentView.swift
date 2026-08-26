@@ -66,6 +66,19 @@ struct ContentView: View {
                     .background(Color.orange.opacity(0.12))
                 }
 
+                // 状态指示（是否捕获到字幕）
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(bridge.statusText.contains("失败") || bridge.statusText.contains("未") ? Color.red : Color(hex: "#02D7E0"))
+                        .frame(width: 8, height: 8)
+                    Text(bridge.statusText)
+                        .font(.caption)
+                        .foregroundStyle(Color.white.opacity(0.6))
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+
                 // 油管播放页（可登录，字幕注入）
                 YouTubePlayerView(bridge: bridge, homeURL: currentURL)
                     .ignoresSafeArea(edges: .bottom)

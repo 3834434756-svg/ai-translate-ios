@@ -126,7 +126,8 @@ extension FloatingWindowManager {
     private func activateAudioSession() {
         guard !audioSessionActive else { return }
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .spokenAudio, options: [.mixWithOthers, .duckOthers])
+            // 用 playback 类别，避免 playAndRecord 打断/干扰网页视频的声音
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
             audioSessionActive = true
         } catch {

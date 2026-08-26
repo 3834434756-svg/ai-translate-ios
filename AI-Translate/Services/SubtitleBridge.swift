@@ -15,6 +15,7 @@ final class SubtitleBridge: NSObject, ObservableObject {
     @Published var webError: String?
     @Published var reloadToken = 0
     @Published var targetURL: URL?
+    @Published var statusText = "等待连接到频道字幕…"
 
     private weak var floatingWindow: FloatingWindowManager?
     private let translationService: TranslationService
@@ -39,34 +40,55 @@ final class SubtitleBridge: NSObject, ObservableObject {
               window.webkit.messageHandlers[handlerName].postMessage({type:'cue', text:text});
             }
           }
+          function clean(html) {
+            var el = document.createElement('div');
+            el.innerHTML = html || '';
+            return el.textContent.replace(/\\n/g, ' ').replace(/\\s+/g, ' ').trim();
+          }
+          var lastPosted = '';
+          function postIfChanged(text) {
+            if (text && text !== lastPosted) {
+              lastPosted = text;
+              post(text);
+            }
+          }
+          // 1) 读取 video.textTracks 的 cuechange
           function attachTrack(track) {
             if (track.__attached) return;
             track.__attached = true;
             track.addEventListener('cuechange', function() {
               if (track.activeCues && track.activeCues.length > 0) {
-                var t = track.activeCues[0].text.replace(/\\n/g, ' ').replace(/<[^>]+>/g, '').trim();
-                if (t) post(t);
+                postIfChanged(clean(track.activeCues[0].text));
               }
             });
+          }
+          // 2) 直接读油管渲染出来的字幕 DOM（更可靠）
+          function readRendered() {
+            var nodes = document.querySelectorAll(
+              '.ytp-caption-segment, .captions-text, .ytp-caption-window-container .caption-visual-line, #ytp-caption-window-container .captions-text'
+            );
+            var parts = [];
+            for (var i = 0; i < nodes.length; i++) {
+              var t = clean(nodes[i].innerText || nodes[i].textContent);
+              if (t) parts.push(t);
+            }
+            if (parts.length) postIfChanged(parts.join(' '));
           }
           function scan() {
             var videos = document.querySelectorAll('video');
             for (var i = 0; i < videos.length; i++) {
               var tracks = videos[i].textTracks;
-              for (var j = 0; j < tracks.length; j++) {
-                attachTrack(tracks[j]);
-                if (tracks.length && tracks[j].mode !== 'hidden') {
-                  // 保持字幕模式（showing）。不强制改模式，尊重用户是否开 CC。
-                }
-              }
+              for (var j = 0; j < tracks.length; j++) attachTrack(tracks[j]);
             }
+            readRendered();
           }
           function init() {
             scan();
             if (document.body) {
               new MutationObserver(function() { scan(); })
-                .observe(document.body, {childList:true, subtree:true});
+                .observe(document.body, {childList:true, subtree:true, characterData:true});
             }
+            setInterval(scan, 1500);
           }
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
@@ -82,6 +104,7 @@ final class SubtitleBridge: NSObject, ObservableObject {
         currentSubtitle = ""
         translatedSubtitle = ""
         pendingText = ""
+        statusText = "等待连接到视频…"
     }
 }
 
@@ -105,10 +128,12 @@ extension SubtitleBridge: WKScriptMessageHandler {
               text != currentSubtitle else { return }
         currentSubtitle = text
         pendingText = text
+        statusText = "已捕获字幕，翻译中…"
         Task {
             await translationService.translate(text)
             let translated = translationService.translatedText
             translatedSubtitle = translated
+            statusText = "已翻译"
             // 更新画中画（若已开启）
             if floatingWindow?.isShowing == true {
                 floatingWindow?.updateText(text + "\n——\n" + translated)
