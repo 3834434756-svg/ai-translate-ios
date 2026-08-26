@@ -19,5 +19,5 @@ fi
 mkdir -p build/Payload
 cp -R "$APP_PATH" build/Payload/
 cd build && zip -r AI-Translate.ipa Payload/
-mv build/AI-Translate.ipa .
+mv AI-Translate.ipa ..
 echo "IPA built: $(pwd)/AI-Translate.ipa"
