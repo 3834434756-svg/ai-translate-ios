@@ -6,7 +6,8 @@ struct ContentView: View {
     @EnvironmentObject var floatingWindow: FloatingWindowManager
 
     @State private var showSettings = false
-    @State private var showFloating = false
+    @State private var inputText = ""
+    @State private var showPiP = false
 
     var body: some View {
         NavigationStack {
@@ -14,31 +15,7 @@ struct ContentView: View {
                 LinearGradient(colors: [Color.black, Color(hex: "#1a1a2e")], startPoint: .top, endPoint: .bottom)
                     .ignoresSafeArea()
 
-                VStack(spacing: 24) {
-                    Spacer()
-
-                    // 状态
-                    Text(speechManager.isRecording ? "正在聆听..." : "点击麦克风开始说话")
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(speechManager.isRecording ? Color.red : Color.gray)
-
-                    // 识别的日文
-                    if !speechManager.recognizedText.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("识别结果（日文）")
-                                .font(.caption)
-                                .foregroundStyle(Color.gray)
-                            Text(speechManager.recognizedText)
-                                .font(.system(size: 16, weight: .regular, design: .default))
-                                .foregroundStyle(Color.white)
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.white.opacity(0.08))
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        .padding(.horizontal, 24)
-                    }
-
+                VStack(spacing: 20) {
                     // 翻译结果
                     if !translationService.translatedText.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
@@ -56,31 +33,73 @@ struct ContentView: View {
                         .padding(.horizontal, 24)
                     }
 
-                    // 麦克风按钮
-                    Button(action: toggleRecording) {
-                        ZStack {
-                            Circle()
-                                .fill(speechManager.isRecording ? Color.red : Color(hex: "#02D7E0"))
-                                .frame(width: 100, height: 100)
-                                .shadow(radius: speechManager.isRecording ? 20 : 10, x: 0, y: 0)
+                    // 粘贴日语字幕输入
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("粘贴日语字幕 / 文本，翻译后显示在系统画中画")
+                            .font(.caption)
+                            .foregroundStyle(Color.gray)
 
-                            Image(systemName: speechManager.isRecording ? "mic.fill" : "mic")
-                                .font(.system(size: 40))
-                                .foregroundStyle(.white)
+                        TextEditor(text: $inputText)
+                            .frame(height: 130)
+                            .scrollContentBackground(.hidden)
+                            .background(Color.white.opacity(0.05))
+                            .foregroundStyle(Color.white)
+                            .font(.system(size: 16))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            )
+
+                        Button(action: translateAndShow) {
+                            HStack {
+                                if translationService.isTranslating {
+                                    ProgressView().tint(.white)
+                                } else {
+                                    Image(systemName: "pip")
+                                }
+                                Text(translationService.isTranslating ? "翻译中..." : "翻译并显示到画中画")
+                            }
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.white.opacity(0.1) : Color(hex: "#02D7E0"))
+                            .foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
                         }
+                        .disabled(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || translationService.isTranslating)
                     }
-                    .scaleEffect(speechManager.isRecording ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.3), value: speechManager.isRecording)
+                    .padding(.horizontal, 24)
 
-                    // 悬浮窗按钮
+                    // 控制区
                     HStack(spacing: 20) {
+                        // 麦克风（次要功能）
+                        Button(action: toggleRecording) {
+                            ZStack {
+                                Circle()
+                                    .fill(speechManager.isRecording ? Color.red : Color(hex: "#02D7E0"))
+                                    .frame(width: 64, height: 64)
+                                    .shadow(radius: speechManager.isRecording ? 16 : 6)
+                                Image(systemName: speechManager.isRecording ? "mic.fill" : "mic")
+                                    .font(.system(size: 24))
+                                    .foregroundStyle(.white)
+                            }
+                        }
+                        .scaleEffect(speechManager.isRecording ? 1.1 : 1.0)
+                        .animation(.easeInOut(duration: 0.3), value: speechManager.isRecording)
+
+                        // 画中画开关
                         Button(action: {
-                            floatingWindow.toggle(text: translationService.translatedText)
-                            showFloating.toggle()
+                            if floatingWindow.isShowing {
+                                floatingWindow.hide()
+                            } else {
+                                floatingWindow.show(text: translationService.translatedText)
+                            }
+                            showPiP = floatingWindow.isShowing
                         }) {
-                            Label(showFloating ? "关闭悬浮窗" : "开启悬浮窗", systemImage: "pip.enter")
+                            Label(floatingWindow.isShowing ? "关闭画中画" : "开启画中画", systemImage: "pip.enter")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(showFloating ? .red : Color(hex: "#02D7E0"))
+                                .foregroundStyle(floatingWindow.isShowing ? .red : Color(hex: "#02D7E0"))
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 12)
                                 .background(Color.white.opacity(0.06))
@@ -88,31 +107,39 @@ struct ContentView: View {
                         }
 
                         Button(action: { showSettings = true }) {
-                            Label("设置", systemImage: "gearshape")
-                                .font(.system(size: 14, weight: .medium))
+                            Image(systemName: "gearshape")
+                                .font(.system(size: 20))
                                 .foregroundStyle(Color.gray)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 12)
+                                .frame(width: 44, height: 44)
                                 .background(Color.white.opacity(0.06))
-                                .clipShape(Capsule())
+                                .clipShape(Circle())
                         }
                     }
-                    .padding(.horizontal, 40)
+                    .padding(.horizontal, 24)
 
                     Spacer()
                 }
                 .navigationTitle("AI 翻译")
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("设置") { showSettings = true }
-                            .foregroundStyle(Color(hex: "#02D7E0"))
-                    }
-                }
                 .sheet(isPresented: $showSettings) {
                     SettingsView()
                 }
             }
+        }
+        .onReceive(translationService.$translatedText) { newText in
+            // 画中画开启时，实时同步最新翻译结果
+            if floatingWindow.isShowing, !newText.isEmpty {
+                floatingWindow.updateText(newText)
+            }
+        }
+    }
+
+    private func translateAndShow() {
+        let trimmed = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        Task {
+            await translationService.translate(trimmed)
+            // 翻译完成后，若已有旧结果先保证显示；或手动开画中画
         }
     }
 

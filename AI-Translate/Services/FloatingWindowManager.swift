@@ -1,12 +1,29 @@
 import SwiftUI
 import UIKit
+import AVKit
+import AVFoundation
 
+/// 系统级真画中画 (Picture-in-Picture) 悬浮窗。
+/// 使用 AVPictureInPictureVideoCallViewController 作为内容源，
+/// 让翻译文本以系统小气泡悬浮在其他 App（如 YouTube）之上，
+/// 可拖动、后台持续显示、不影响任何 App 性能。
 @MainActor
 class FloatingWindowManager: NSObject, ObservableObject {
     @Published var isShowing = false
-    private var floatingWindow: UIWindow?
-    private var textLabel: UILabel?
-    private var panGesture: UIPanGestureRecognizer?
+
+    private var pipController: AVPictureInPictureController?
+    private var pipViewController: AVPictureInPictureVideoCallViewController?
+    private var label: UILabel?
+    private var audioSessionActive = false
+
+    var currentText: String {
+        get { return _currentText }
+        set {
+            _currentText = newValue
+            label?.text = newValue
+        }
+    }
+    private var _currentText: String = ""
 
     func toggle(text: String) {
         if isShowing {
@@ -17,56 +34,98 @@ class FloatingWindowManager: NSObject, ObservableObject {
     }
 
     func show(text: String) {
-        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        let window = UIWindow(windowScene: scene)
-        window.windowLevel = .alert + 1
-        window.backgroundColor = .clear
+        guard AVPictureInPictureController.isPictureInPictureSupported() else { return }
+        guard pipController == nil else {
+            updateText(text)
+            return
+        }
+        _currentText = text
 
-        let container = UIView(frame: CGRect(x: 40, y: 100, width: scene.screen.bounds.width - 80, height: 160))
-        container.backgroundColor = UIColor.black.withAlphaComponent(0.85)
-        container.layer.cornerRadius = 16
-        container.layer.borderWidth = 1
-        container.layer.borderColor = UIColor.systemTeal.cgColor
+        // 保持活跃的音频会话，让 PiP 在退回后台后仍能持续。
+        activateAudioSession()
 
-        let label = UILabel(frame: container.bounds.insetBy(dx: 16, dy: 16))
+        // 创建承载翻译内容的自定义 PiP 视图控制器
+        let pipVC = AVPictureInPictureVideoCallViewController()
+        pipVC.preferredContentSize = CGSize(width: 280, height: 110)
+        pipVC.view.backgroundColor = UIColor.black.withAlphaComponent(0.9)
+        pipVC.view.layer.cornerRadius = 16
+        pipVC.view.layer.masksToBounds = true
+
+        let label = UILabel(frame: pipVC.view.bounds.insetBy(dx: 16, dy: 16))
         label.text = text
         label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         label.numberOfLines = 0
         label.textAlignment = .center
-        container.addSubview(label)
-        textLabel = label
+        label.lineBreakMode = .byCharWrapping
+        pipVC.view.addSubview(label)
+        self.label = label
 
-        // 拖动手势
-        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
-        container.addGestureRecognizer(pan)
-        panGesture = pan
+        let contentSource = AVPictureInPictureController.ContentSource(
+            videoCallContentViewSource: pipVC
+        )
+        guard let controller = AVPictureInPictureController(contentSource: contentSource) else { return }
+        controller.delegate = self
+        pipController = controller
+        pipViewController = pipVC
 
-        // 点击隐藏
-        let tap = UITapGestureRecognizer(target: self, action: #selector(hide))
-        container.addGestureRecognizer(tap)
-
-        window.addSubview(container)
-        window.isHidden = false
-        floatingWindow = window
+        controller.startPictureInPicture()
         isShowing = true
     }
 
-    @objc func hide() {
-        floatingWindow?.isHidden = true
-        floatingWindow = nil
-        textLabel = nil
+    func hide() {
+        pipController?.stopPictureInPicture()
+        label?.removeFromSuperview()
+        label = nil
+        pipViewController = nil
+        pipController = nil
         isShowing = false
+        deactivateAudioSession()
     }
 
     func updateText(_ text: String) {
-        textLabel?.text = text
+        _currentText = text
+        label?.text = text
     }
 
-    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
-        guard let view = gesture.view else { return }
-        let translation = gesture.translation(in: view.superview)
-        view.center = CGPoint(x: view.center.x + translation.x, y: view.center.y + translation.y)
-        gesture.setTranslation(.zero, in: view.superview)
+    @discardableResult
+    func updateTextAndKeepShowing(_ text: String) -> Bool {
+        guard isShowing else { return false }
+        updateText(text)
+        return true
+    }
+}
+
+// MARK: - 音频会话（保证后台 PiP 持续）
+extension FloatingWindowManager {
+    private func activateAudioSession() {
+        guard !audioSessionActive else { return }
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .spokenAudio, options: [.mixWithOthers, .duckOthers])
+            try AVAudioSession.sharedInstance().setActive(true, options: .notifyOthersOnDeactivation)
+            audioSessionActive = true
+        } catch {
+            print("[PiP] 激活音频会话失败: \(error.localizedDescription)")
+        }
+    }
+
+    private func deactivateAudioSession() {
+        guard audioSessionActive else { return }
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        audioSessionActive = false
+    }
+}
+
+// MARK: - AVPictureInPictureControllerDelegate
+extension FloatingWindowManager: AVPictureInPictureControllerDelegate {
+    nonisolated func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
+        Task { @MainActor in
+            isShowing = false
+            label?.removeFromSuperview()
+            label = nil
+            pipViewController = nil
+            pipController = nil
+            deactivateAudioSession()
+        }
     }
 }
