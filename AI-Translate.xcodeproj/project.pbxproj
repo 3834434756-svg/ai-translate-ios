@@ -1,0 +1,42 @@
+// !$*UTF8*$!
+{
+  archiveVersion = 1;
+  classes = {};
+  objectVersion = 56;
+  rootObject = 7B58918E887D4A289EF8D163;
+
+  objects = {
+    7B58918E887D4A289EF8D163 = {isa=PBXProject;attributes={BuildIndependentTargetsInParallel=1;};buildConfigurationList=2381B5F4F8CE47F69335FF5E;compatibilityVersion="Xcode 14.0";developmentRegion=en;hasScannedForEncodings=0;knownRegions=(en,Base,ja,"zh-Hans");mainGroup=569C7D5B4DAA492B93FD0DE8;productRefGroup=B8763CFE5E274DACA11AF5F7;projectDirPath="";projectRoot="";targets=(24FC1010533944A29BA30D8B);};
+    24FC1010533944A29BA30D8B = {isa=PBXNativeTarget;buildConfigurationList=568E71B8AB38416E97BA9E52;buildPhases=(7FE2FCF7F6FB4078B733D831,70970702800B496D8C86AEE0,2C493076B62F4F799B337A29);buildRules=();dependencies=();name=AI-Translate;productName=AI-Translate;productReference=72F244CA063D49C7B9D34C02;productType="com.apple.product-type.application";};
+    568E71B8AB38416E97BA9E52 = {isa=XCConfigurationList;buildConfigurations=(CA3A357EA62146C3B9AA4833,7CECFA76FE204C34BB594FEF);defaultConfigurationIsVisible=0;defaultConfigurationName=Release;};
+    2381B5F4F8CE47F69335FF5E = {isa=XCConfigurationList;buildConfigurations=(172AFDA3893D4308A5EA1652,451931C6B7564CDEA944161A);defaultConfigurationIsVisible=0;defaultConfigurationName=Release;};
+    CA3A357EA62146C3B9AA4833 = {isa=XCBuildConfiguration;buildSettings={PRODUCT_BUNDLE_IDENTIFIER=com.airanslate.app;PRODUCT_NAME=$(TARGET_NAME);SWIFT_VERSION=5.0;IPHONEOS_DEPLOYMENT_TARGET=16.0;TARGETED_DEVICE_FAMILY="1,2";SUPPORTS_MACCATALYST=NO;CODE_SIGNING_ALLOWED=NO;CODE_SIGNING_REQUIRED=NO;ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon;INFOPLIST_FILE=Info.plist;LD_RUNPATH_SEARCH_PATHS=("$(inherited)","@executable_path/Frameworks");ENABLE_PREVIEWS=YES;SWIFT_OPTIMIZATION_LEVEL="-Onone";DEBUG_INFORMATION_FORMAT=dwarf;};name=Debug;};
+    7CECFA76FE204C34BB594FEF = {isa=XCBuildConfiguration;buildSettings={PRODUCT_BUNDLE_IDENTIFIER=com.airanslate.app;PRODUCT_NAME=$(TARGET_NAME);SWIFT_VERSION=5.0;IPHONEOS_DEPLOYMENT_TARGET=16.0;TARGETED_DEVICE_FAMILY="1,2";SUPPORTS_MACCATALYST=NO;CODE_SIGNING_ALLOWED=NO;CODE_SIGNING_REQUIRED=NO;ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon;INFOPLIST_FILE=Info.plist;LD_RUNPATH_SEARCH_PATHS=("$(inherited)","@executable_path/Frameworks");ENABLE_PREVIEWS=YES;SWIFT_OPTIMIZATION_LEVEL="-O";DEBUG_INFORMATION_FORMAT="dwarf-with-dsym";};name=Release;};
+    172AFDA3893D4308A5EA1652 = {isa=XCBuildConfiguration;buildSettings={PRODUCT_BUNDLE_IDENTIFIER=com.airanslate.app;PRODUCT_NAME=$(TARGET_NAME);SWIFT_VERSION=5.0;IPHONEOS_DEPLOYMENT_TARGET=16.0;TARGETED_DEVICE_FAMILY="1,2";SUPPORTS_MACCATALYST=NO;CODE_SIGNING_ALLOWED=NO;CODE_SIGNING_REQUIRED=NO;ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon;INFOPLIST_FILE=Info.plist;LD_RUNPATH_SEARCH_PATHS=("$(inherited)","@executable_path/Frameworks");ENABLE_PREVIEWS=YES;};name=Debug;};
+    451931C6B7564CDEA944161A = {isa=XCBuildConfiguration;buildSettings={PRODUCT_BUNDLE_IDENTIFIER=com.airanslate.app;PRODUCT_NAME=$(TARGET_NAME);SWIFT_VERSION=5.0;IPHONEOS_DEPLOYMENT_TARGET=16.0;TARGETED_DEVICE_FAMILY="1,2";SUPPORTS_MACCATALYST=NO;CODE_SIGNING_ALLOWED=NO;CODE_SIGNING_REQUIRED=NO;ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon;INFOPLIST_FILE=Info.plist;LD_RUNPATH_SEARCH_PATHS=("$(inherited)","@executable_path/Frameworks");ENABLE_PREVIEWS=YES;};name=Release;};
+    569C7D5B4DAA492B93FD0DE8 = {isa=PBXGroup;children=(C67101369D2147B69299A366,B8763CFE5E274DACA11AF5F7);path="AI-Translate";sourceTree="<group>";};
+    C67101369D2147B69299A366 = {isa=PBXGroup;children=(4C79F8E997884F98BA660433, 9D33381077AC479B90A2C1B1, C283C42522264D06A4BA590A, 98C96C4F8C044A7CABB6C995, 58EA31DAC2084338917728D4, 5C3E718D6DED4597BF602DAD);path=App;sourceTree="<group>";};
+    B8763CFE5E274DACA11AF5F7 = {isa=PBXGroup;children=(B043F3B26002495BAB9AD618, FE4B9E82A18C4AAF864A710C);path=Resources;sourceTree="<group>";};
+    4C79F8E997884F98BA660433 = {isa=PBXFileReference;lastKnownFileType=sourcecode.swift;path=AI_TranslateApp.swift;sourceTree="<group>";};
+    9D33381077AC479B90A2C1B1 = {isa=PBXFileReference;lastKnownFileType=sourcecode.swift;path=ContentView.swift;sourceTree="<group>";};
+    C283C42522264D06A4BA590A = {isa=PBXFileReference;lastKnownFileType=sourcecode.swift;path=SettingsView.swift;sourceTree="<group>";};
+    98C96C4F8C044A7CABB6C995 = {isa=PBXFileReference;lastKnownFileType=sourcecode.swift;path=TranslationService.swift;sourceTree="<group>";};
+    58EA31DAC2084338917728D4 = {isa=PBXFileReference;lastKnownFileType=sourcecode.swift;path=SpeechManager.swift;sourceTree="<group>";};
+    5C3E718D6DED4597BF602DAD = {isa=PBXFileReference;lastKnownFileType=sourcecode.swift;path=FloatingWindowManager.swift;sourceTree="<group>";};
+    B043F3B26002495BAB9AD618 = {isa=PBXFileReference;lastKnownFileType=folder;path=Assets.xcassets;sourceTree="<group>";};
+    FE4B9E82A18C4AAF864A710C = {isa=PBXFileReference;lastKnownFileType=text.plist.entitlements;path=Info.plist;sourceTree="<group>";};
+    72F244CA063D49C7B9D34C02 = {isa=PBXFileReference;explicitFileType="wrapper.application";includeInIndex=0;path=AI-Translate.app;sourceTree=BUILT_PRODUCTS_DIR;};
+    7FE2FCF7F6FB4078B733D831 = {isa=PBXSourcesBuildPhase;files=(C50B170045A743029460D840, EE9EA7CBE5004584A5F946A8, 73CA7D4A532F4031803842AA, A9DC5D07F2D049699FD45799, A435FDD3D5C848C48211DB7C, C3F4C09A77D547ADAFBEEAA7);runOnlyForDeploymentPostprocessing=0;};
+    70970702800B496D8C86AEE0 = {isa=PBXResourcesBuildPhase;files=(3C79FB0CB4BD4F79B6D9F27B);runOnlyForDeploymentPostprocessing=0;};
+    2C493076B62F4F799B337A29 = {isa=PBXFrameworksBuildPhase;files=();runOnlyForDeploymentPostprocessing=0;};
+    C50B170045A743029460D840 = {isa=PBXBuildFile;fileRef=4C79F8E997884F98BA660433;};
+    EE9EA7CBE5004584A5F946A8 = {isa=PBXBuildFile;fileRef=9D33381077AC479B90A2C1B1;};
+    73CA7D4A532F4031803842AA = {isa=PBXBuildFile;fileRef=C283C42522264D06A4BA590A;};
+    A9DC5D07F2D049699FD45799 = {isa=PBXBuildFile;fileRef=98C96C4F8C044A7CABB6C995;};
+    A435FDD3D5C848C48211DB7C = {isa=PBXBuildFile;fileRef=58EA31DAC2084338917728D4;};
+    C3F4C09A77D547ADAFBEEAA7 = {isa=PBXBuildFile;fileRef=5C3E718D6DED4597BF602DAD;};
+    3C79FB0CB4BD4F79B6D9F27B = {isa=PBXBuildFile;fileRef=B043F3B26002495BAB9AD618;};
+  };
+
+  rootObject = 7B58918E887D4A289EF8D163;
+}

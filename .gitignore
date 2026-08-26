@@ -1,0 +1,8 @@
+.DS_Store
+build/
+*.ipa
+DerivedData/
+*.xcworkspace
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
