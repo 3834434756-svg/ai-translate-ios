@@ -49,7 +49,7 @@ struct ContentView: View {
                 .padding(.top, 6)
 
                 // 油管播放页（可登录，字幕注入）
-                YouTubePlayerView(bridge: bridge, translationService: translationService, homeURL: currentURL)
+                YouTubePlayerView(bridge: bridge, homeURL: currentURL)
                     .ignoresSafeArea(edges: .bottom)
 
                 // 翻译叠加层（显示当前字幕 + 中文）

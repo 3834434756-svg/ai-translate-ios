@@ -5,7 +5,6 @@ import WebKit
 /// 通过注入 JS 读取字幕轨(CC)并实时翻译叠加。
 struct YouTubePlayerView: UIViewRepresentable {
     @ObservedObject var bridge: SubtitleBridge
-    @EnvironmentObject var translationService: TranslationService
     var homeURL: URL
 
     func makeCoordinator() -> Coordinator {
