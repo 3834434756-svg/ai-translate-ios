@@ -1,0 +1,32 @@
+name: AI-Translate
+options:
+  bundleIdPrefix: com.airanslate
+  deploymentTarget:
+    iOS: "16.0"
+  developmentTeam: ""
+  xcodeVersion: "26.0"
+
+targets:
+  AI-Translate:
+    type: application
+    platform: iOS
+    sources:
+      - path: AI-Translate/App
+      - path: AI-Translate/Views
+      - path: AI-Translate/Services
+    resources:
+      - path: AI-Translate/Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.airanslate.app
+        IPHONEOS_DEPLOYMENT_TARGET: 16.0
+        SWIFT_VERSION: 5.0
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        INFOPLIST_FILE: AI-Translate/Info.plist
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/Frameworks"
+        ENABLE_PREVIEWS: YES
