@@ -26,7 +26,7 @@ out.append("// !$*UTF8*$!")
 out.append("{")
 out.append("  archiveVersion = 1;")
 out.append("  classes = {};")
-out.append("  objectVersion = 56;")
+out.append("  objectVersion = 60;")
 out.append(f"  rootObject = {PID};")
 out.append("")
 
