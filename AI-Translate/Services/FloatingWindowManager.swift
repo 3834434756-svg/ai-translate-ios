@@ -52,7 +52,7 @@ class FloatingWindowManager: NSObject, ObservableObject {
         isShowing = true
     }
 
-    func hide() {
+    @objc func hide() {
         floatingWindow?.isHidden = true
         floatingWindow = nil
         textLabel = nil
