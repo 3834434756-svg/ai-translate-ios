@@ -12,6 +12,9 @@ enum SubtitleBridgeNames {
 final class SubtitleBridge: NSObject, ObservableObject {
     @Published var currentSubtitle = ""
     @Published var translatedSubtitle = ""
+    @Published var webError: String?
+    @Published var reloadToken = 0
+    @Published var targetURL: URL?
 
     private weak var floatingWindow: FloatingWindowManager?
     private let translationService: TranslationService

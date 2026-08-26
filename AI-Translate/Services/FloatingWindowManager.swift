@@ -63,14 +63,22 @@ class FloatingWindowManager: NSObject, ObservableObject {
         self.label = label
 
         // 源视图：系统用它作为画中画转场动画的来源锚点。
+        // 必须挂到真实的 window 上，否则 startPictureInPicture 会静默失败。
         let source = UIView(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
-        source.isHidden = true
+        source.isHidden = false
         source.alpha = 0
-        if let keyWindow = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .flatMap({ $0.windows })
-            .first(where: { $0.isKeyWindow }) {
-            keyWindow.addSubview(source)
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let window = scenes
+            .flatMap { $0.windows }
+            .first(where: { $0.isKeyWindow })
+            ?? scenes.first?.windows.first
+        if let targetWindow = window {
+            targetWindow.addSubview(source)
+        } else if let pipWinScene = scenes.first {
+            let w = UIWindow(windowScene: pipWinScene)
+            w.windowLevel = .alert
+            w.isHidden = false
+            w.addSubview(source)
         }
         sourceView = source
 
@@ -80,6 +88,7 @@ class FloatingWindowManager: NSObject, ObservableObject {
         )
         let controller = AVPictureInPictureController(contentSource: contentSource)
         controller.delegate = self
+        controller.canStartPictureInPictureAutomaticallyFromInline = true
         pipController = controller
         pipViewController = pipVC
 

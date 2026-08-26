@@ -48,6 +48,24 @@ struct ContentView: View {
                 .padding(.horizontal, 12)
                 .padding(.top, 6)
 
+                // 加载失败提示
+                if let webError = bridge.webError, !webError.isEmpty {
+                    HStack(spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .foregroundStyle(Color.orange)
+                        Text(webError)
+                            .font(.caption)
+                            .foregroundStyle(Color.orange)
+                        Spacer()
+                        Button("重试") { reloadWeb() }
+                            .font(.caption.bold())
+                            .foregroundStyle(Color(hex: "#02D7E0"))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.orange.opacity(0.12))
+                }
+
                 // 油管播放页（可登录，字幕注入）
                 YouTubePlayerView(bridge: bridge, homeURL: currentURL)
                     .ignoresSafeArea(edges: .bottom)
@@ -91,6 +109,10 @@ struct ContentView: View {
                         Image(systemName: floatingWindow.isShowing ? "pip.exit" : "pip.enter")
                             .foregroundStyle(floatingWindow.isShowing ? Color.red : Color(hex: "#02D7E0"))
                     }
+                    Button { reloadWeb() } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundStyle(Color(hex: "#02D7E0"))
+                    }
                     Button { showSettings = true } label: {
                         Image(systemName: "gearshape")
                             .foregroundStyle(Color(hex: "#02D7E0"))
@@ -111,11 +133,25 @@ struct ContentView: View {
         .onAppear { pipActive = floatingWindow.isShowing }
     }
 
+    private func reloadWeb() {
+        bridge.reloadToken += 1
+        bridge.webError = nil
+    }
+
     private func navigate() {
         let raw = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !raw.isEmpty else { return }
-        if let url = URL(string: raw) {
+        if let url = URL(string: raw),
+           (url.scheme == "http" || url.scheme == "https") {
             currentURL = url
+            bridge.targetURL = url
+            bridge.webError = nil
+        } else if raw.lowercased().contains("youtube.com") || raw.lowercased().contains("youtu.be") {
+            if let url = URL(string: raw.hasPrefix("http") ? raw : "https://\(raw)") {
+                currentURL = url
+                bridge.targetURL = url
+                bridge.webError = nil
+            }
         }
     }
 }
