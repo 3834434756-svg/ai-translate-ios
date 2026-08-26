@@ -13,6 +13,7 @@ class FloatingWindowManager: NSObject, ObservableObject {
 
     private var pipController: AVPictureInPictureController?
     private var pipViewController: AVPictureInPictureVideoCallViewController?
+    private var sourceView: UIView?
     private var label: UILabel?
     private var audioSessionActive = false
 
@@ -61,8 +62,21 @@ class FloatingWindowManager: NSObject, ObservableObject {
         pipVC.view.addSubview(label)
         self.label = label
 
+        // 源视图：系统用它作为画中画转场动画的来源锚点。
+        let source = UIView(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+        source.isHidden = true
+        source.alpha = 0
+        if let keyWindow = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow }) {
+            keyWindow.addSubview(source)
+        }
+        sourceView = source
+
         let contentSource = AVPictureInPictureController.ContentSource(
-            videoCallContentViewSource: pipVC
+            activeVideoCallSourceView: source,
+            contentViewController: pipVC
         )
         guard let controller = AVPictureInPictureController(contentSource: contentSource) else { return }
         controller.delegate = self
@@ -75,6 +89,8 @@ class FloatingWindowManager: NSObject, ObservableObject {
 
     func hide() {
         pipController?.stopPictureInPicture()
+        sourceView?.removeFromSuperview()
+        sourceView = nil
         label?.removeFromSuperview()
         label = nil
         pipViewController = nil
@@ -121,6 +137,8 @@ extension FloatingWindowManager: AVPictureInPictureControllerDelegate {
     nonisolated func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
         Task { @MainActor in
             isShowing = false
+            sourceView?.removeFromSuperview()
+            sourceView = nil
             label?.removeFromSuperview()
             label = nil
             pipViewController = nil
